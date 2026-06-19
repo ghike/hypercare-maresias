@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="slides-format" content="viewport">
+    <title>Encerramento Hypercare — Projeto Maresias</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+        @theme {
+            --color-bg:             #f0f5fc;
+            --color-bg-deep:        #e4ecf8;
+            --color-surface:        #dce7f5;
+            --color-text:           #0d1f3c;
+            --color-text-secondary: #2d4a72;
+            --color-text-muted:     #5878a0;
+            --color-accent-1:       #1e5bb5;
+            --color-accent-2:       #3b7fd4;
+            --color-accent-3:       #0a3a82;
+            --color-glass-bg:       rgba(255,255,255,0.75);
+            --color-glass-border:   rgba(30,91,181,0.15);
+            --color-vignette:       rgba(0,0,0,0.05);
+            --font-display:         'Instrument Serif', Georgia, serif;
+            --font-body:            'DM Sans', sans-serif;
+        }
+    </style>
+
+    <style>
+        :root {
+            --color-bg: #f0f5fc;
+            --color-text: #0d1f3c;
+            --glow-color-rgb: 30, 91, 181;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            background: var(--color-bg);
+            margin: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--color-text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.97);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+        }
+
+        .slide>.content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1100px;
+            padding: clamp(1.5rem, 4vw, 3.5rem);
+        }
+
+        .nav-controls {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            padding: 9px 22px;
+            border-radius: 40px;
+            border: 1px solid rgba(30, 91, 181, 0.20);
+            box-shadow: 0 2px 16px rgba(30, 91, 181, 0.10);
+        }
+
+        .nav-btn {
+            width: 38px;
+            height: 38px;
+            border: none;
+            background: rgba(30, 91, 181, 0.08);
+            color: #1e5bb5;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.25s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(30, 91, 181, 0.18);
+        }
+
+        .slide-dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .slide-dots .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(30, 91, 181, 0.18);
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .slide-dots .dot.active {
+            background: #1e5bb5;
+            transform: scale(1.35);
+        }
+
+        .slide-counter {
+            font-size: 0.75rem;
+            color: #5878a0;
+            min-width: 38px;
+            text-align: center;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        /* Gradient mesh blobs */
+        @keyframes float-slow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(55px, -45px) scale(1.1);
+            }
+
+            50% {
+                transform: translate(-35px, 38px) scale(0.92);
+            }
+
+            75% {
+                transform: translate(45px, 18px) scale(1.07);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes float-drift {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(-45px, -55px) scale(1.14) rotate(2deg);
+            }
+
+            66% {
+                transform: translate(38px, 28px) scale(0.9) rotate(-2deg);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-14px);
+            }
+        }
+
+        .gradient-mesh {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float-slow 12s ease-in-out infinite;
+        }
+
+        .blob:nth-child(2) {
+            animation: float-drift 16s ease-in-out infinite;
+        }
+
+        .blob:nth-child(3) {
+            animation: float-slow 20s ease-in-out infinite reverse;
+        }
+
+        /* Noise + vignette */
+        .slide::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 256px;
+            opacity: 0.03;
+            mix-blend-mode: overlay;
+        }
+
+        .slide::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 50%, var(--color-vignette) 100%);
+        }
+
+        /* Glow */
+        .text-glow {
+            text-shadow: 0 0 12px rgba(30, 91, 181, 0.25), 0 0 24px rgba(30, 91, 181, 0.10);
+        }
+
+        @keyframes glow-pulse {
+
+            0%,
+            100% {
+                text-shadow: 0 0 12px rgba(30, 91, 181, 0.25), 0 0 24px rgba(30, 91, 181, 0.10);
+            }
+
+            50% {
+                text-shadow: 0 0 18px rgba(30, 91, 181, 0.40), 0 0 36px rgba(30, 91, 181, 0.18);
+            }
+        }
+
+        .glow-pulse {
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+
+        /* Glass card */
+        .glass {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(30, 91, 181, 0.14);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(30, 91, 181, 0.07);
+        }
+
+        .glass-hover {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .glass-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(30, 91, 181, 0.14);
+        }
+
+        /* Bar fills */
+        .bar-fill {
+            transition: width 0.8s ease;
+            width: 0%;
+        }
+
+        /* Timeline vertical line */
+        .timeline-line {
+            position: absolute;
+            left: 18px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(to bottom, #1e5bb5, #0a3a82);
+            border-radius: 2px;
+        }
+
+        /* Logos bar */
+        .logos-bar {
+            position: absolute;
+            bottom: 56px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            opacity: 0.7;
+        }
+
+        /* Accent divider */
+        .accent-line {
+            width: 52px;
+            height: 3px;
+            background: linear-gradient(to right, #1e5bb5, #3b7fd4);
+            border-radius: 2px;
+            margin-bottom: 1rem;
+        }
+
+        /* Slide number label */
+        .section-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #1e5bb5;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Agenda number */
+        .agenda-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e5bb5, #0a3a82);
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        /* Activity icon pill */
+        .icon-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 99px;
+            background: rgba(30, 91, 181, 0.10);
+            border: 1px solid rgba(30, 91, 181, 0.25);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #1e5bb5;
+        }
+
+        /* Sub-list */
+        .sub-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sub-list li {
+            padding: 5px 0 5px 20px;
+            position: relative;
+            font-size: 0.82rem;
+            color: #2d4a72;
+            line-height: 1.5;
+        }
+
+        .sub-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #1e5bb5;
+            font-size: 0.8rem;
+        }
+
+        /* Stat card big number */
+        .stat-num {
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+
+    <div class="deck">
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 1 — Título / Abertura
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-1 active" data-slide="1">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:520px;height:520px;top:-120px;right:-100px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:300px;height:300px;bottom:-80px;left:-60px;background:#1a4f99;opacity:0.05;"></div>
+                <div class="blob" style="width:220px;height:220px;top:42%;left:14%;background:#70b0f0;opacity:0.06;">
+                </div>
+            </div>
+            <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+            <div class="content text-center" style="display:flex;flex-direction:column;align-items:center;">
+                <!-- Dual logos -->
+                <div style="display:flex;align-items:center;gap:36px;margin-bottom:2.2rem;" class="reveal">
+                    <img src="https://nbiefpnxplioxembpfrl.supabase.co/storage/v1/object/public/tantto/maresias_logo.png" />
+                    <div style="width:1px;height:36px;background:rgba(30,91,181,0.20);"></div>
+                    <!-- Tantto logo (SVG inline) -->
+                    <img src="https://nbiefpnxplioxembpfrl.supabase.co/storage/v1/object/public/tantto/tantto_logo.png" style="max-height:50px;" />
+                </div>
+
+                <div class="reveal"
+                    style="font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;color:#1e5bb5;font-weight:600;margin-bottom:0.8rem;">
+                    Projeto Maresias · 2026</div>
+
+                <h1 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(2.6rem,6vw,4.8rem);font-weight:400;line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,#1e5bb5,#0a3a82,#3b7fd4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                    Encerramento do<br>Período de Hypercare
+                </h1>
+                <p class="reveal"
+                    style="font-size:clamp(0.9rem,1.6vw,1.15rem);color:#2d4a72;letter-spacing:0.08em;font-weight:300;">
+                    Sistema de Roteirização · Suporte Pós Go-Live
+                </p>
+                <div class="reveal"
+                    style="margin-top:2rem;display:inline-flex;align-items:center;gap:10px;padding:8px 20px;border-radius:99px;background:rgba(30,91,181,0.08);border:1px solid rgba(30,91,181,0.28);font-size:0.82rem;color:#1e5bb5;">
+                    📅 4 de maio — 12 de junho de 2026
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 2 — Agenda / Pauta
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-2" data-slide="2">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:380px;height:380px;top:-80px;right:-80px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:260px;height:260px;bottom:-60px;left:-40px;background:#1a4f99;opacity:0.05;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Pauta da Reunião</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(2rem,4vw,2.9rem);font-weight:400;margin-bottom:0.4rem;line-height:1.2;">
+                    Agenda</h2>
+                <div class="accent-line reveal"></div>
+
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:1.2rem;">
+                    <!-- Item 1 -->
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:center;gap:16px;padding:16px 22px;">
+                        <div class="agenda-num">1</div>
+                        <div>
+                            <div style="font-weight:700;font-size:1rem;color:#0d1f3c;">Atividades Realizadas no Período
+                            </div>
+                            <div style="font-size:0.8rem;color:#5878a0;margin-top:2px;">Visão geral das atividades
+                                realizadas</div>
+                        </div>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:center;gap:16px;padding:16px 22px;">
+                        <div class="agenda-num">2</div>
+                        <div>
+                            <div style="font-weight:700;font-size:1rem;color:#0d1f3c;">Estatísticas do Projeto</div>
+                            <div style="font-size:0.8rem;color:#5878a0;margin-top:2px;">Números e métricas do período
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:center;gap:16px;padding:16px 22px;">
+                        <div class="agenda-num">3</div>
+                        <div>
+                            <div style="font-weight:700;font-size:1rem;color:#0d1f3c;">Próximos Passos</div>
+                            <div style="font-size:0.8rem;color:#5878a0;margin-top:2px;">Continuidade e roadmap</div>
+                        </div>
+                    </div>
+                    <!-- Item 4 -->
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:center;gap:16px;padding:16px 22px;">
+                        <div class="agenda-num">4</div>
+                        <div>
+                            <div style="font-weight:700;font-size:1rem;color:#0d1f3c;">Encerramento</div>
+                            <div style="font-size:0.8rem;color:#5878a0;margin-top:2px;">Considerações finais e
+                                agradecimentos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 3 — Divisor: Atividades do Hypercare
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-3" data-slide="3">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:500px;height:500px;top:-100px;right:-80px;background:#3b7fd4;opacity:0.09;"></div>
+                <div class="blob"
+                    style="width:320px;height:320px;bottom:-60px;left:-50px;background:#70b0f0;opacity:0.07;"></div>
+                <div class="blob" style="width:200px;height:200px;top:35%;left:20%;background:#1a4f99;opacity:0.06;">
+                </div>
+            </div>
+            <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1;"></canvas>
+            <div class="content" style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+                <div class="reveal"
+                    style="font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;color:#1e5bb5;font-weight:600;margin-bottom:1rem;">
+                    Seção 1</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(2.2rem,5.5vw,4rem);font-weight:400;line-height:1.15;background:linear-gradient(135deg,#1e5bb5,#0a3a82,#3b7fd4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1rem;">
+                    Atividades Realizadas<br>no Período de Hypercare
+                </h2>
+                <div class="reveal"
+                    style="font-size:clamp(0.9rem,1.5vw,1.1rem);color:#2d4a72;max-width:600px;line-height:1.7;">
+                    Hypercare: &nbsp;·&nbsp; 4 de maio a 12 de junho de 2026
+                </div>
+                <div class="reveal"
+                    style="display:flex;gap:32px;margin-top:2rem;justify-content:center;flex-wrap:wrap;">
+                    <div style="text-align:center;">
+                        <div class="stat-num" style="font-family:'DM Sans',sans-serif;color:#1e5bb5;" data-count="39">39
+                        </div>
+                        <div
+                            style="font-size:0.76rem;color:#5878a0;margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;">
+                            Solicitações</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div class="stat-num" style="font-family:'DM Sans',sans-serif;color:#1e5bb5;" data-count="166">
+                            166</div>
+                        <div
+                            style="font-size:0.76rem;color:#5878a0;margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;">
+                            Roteiros Migrados</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div class="stat-num" style="font-family:'DM Sans',sans-serif;color:#1e5bb5;" data-count="5">5
+                        </div>
+                        <div
+                            style="font-size:0.76rem;color:#5878a0;margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;">
+                            Melhorias de UX</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div class="stat-num" style="font-family:'DM Sans',sans-serif;color:#1e5bb5;" data-count="8">8
+                        </div>
+                        <div
+                            style="font-size:0.76rem;color:#5878a0;margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;">
+                            Tutoriais Entregues</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 4 — Go-Live & Ambiente HML
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-4" data-slide="4">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:360px;height:360px;top:-70px;right:-60px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:240px;height:240px;bottom:-50px;left:-30px;background:#1a4f99;opacity:0.05;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Ambiente & Go-Live</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:400;margin-bottom:0.3rem;">
+                    Liberação do Ambiente e Go-Live</h2>
+                <div class="accent-line reveal"></div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:1.4rem;">
+                    <!-- Card HML -->
+                    <div class="glass glass-hover reveal" style="padding:24px 26px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                            <div style="font-size:2rem;">🧪</div>
+                            <div>
+                                <div class="icon-pill">Homologação</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700;font-size:1.05rem;color:#0d1f3c;margin-bottom:8px;">Ambiente HML
+                            Liberado</div>
+                        <div style="font-size:0.85rem;color:#2d4a72;line-height:1.65;margin-bottom:12px;">
+                            O ambiente de homologação foi liberado para utilização da equipe Maresias em <strong
+                                style="color:#1e5bb5;">5 de maio de 2026</strong>, permitindo a validação dos fluxos
+                            antes do go-live.
+                        </div>
+                        <div
+                            style="padding:10px 14px;border-radius:8px;background:rgba(30,91,181,0.08);border-left:3px solid #1e5bb5;font-size:0.8rem;color:#5878a0;">
+                            📅 Liberado em <strong style="color:#2d4a72;">5 de maio</strong>
+                        </div>
+                    </div>
+
+                    <!-- Card Feriados -->
+                    <div class="glass glass-hover reveal" style="padding:24px 26px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                            <div style="font-size:2rem;">📆</div>
+                            <div>
+                                <div class="icon-pill">Configuração</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700;font-size:1.05rem;color:#0d1f3c;margin-bottom:8px;">Planilha de
+                            Feriados</div>
+                        <div style="font-size:0.85rem;color:#2d4a72;line-height:1.65;">
+                            Importação da planilha de feriados já utilizada pela Maresias, garantindo que os roteiros de
+                            visita respeitem o calendário de folgas da empresa.
+                        </div>
+                    </div>
+
+                    <!-- Card Migração de Roteiros -->
+                    <div class="glass glass-hover reveal" style="padding:24px 26px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                            <div style="font-size:2rem;">🗺️</div>
+                            <div>
+                                <div class="icon-pill">Migração</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700;font-size:1.05rem;color:#0d1f3c;margin-bottom:8px;">Migração de
+                            Roteiros</div>
+                        <div style="font-size:0.85rem;color:#2d4a72;line-height:1.65;margin-bottom:12px;">
+                            <strong style="color:#1e5bb5;">166 roteiros</strong> migrados para o sistema, com
+                            finalização em <strong style="color:#1e5bb5;">9 de junho</strong>. Inclui roteiros de
+                            consultores e clientes.
+                        </div>
+                        <div
+                            style="padding:10px 14px;border-radius:8px;background:rgba(30,91,181,0.08);border-left:3px solid #1e5bb5;font-size:0.8rem;color:#5878a0;">
+                            📊 <strong style="color:#2d4a72;">166 roteiros</strong> · Finalizado em 9 de junho
+                        </div>
+                    </div>
+
+                    <!-- Card Go-Live -->
+                    <div class="glass glass-hover reveal" style="padding:24px 26px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                            <div style="font-size:2rem;">🚀</div>
+                            <div>
+                                <div class="icon-pill"
+                                    style="background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.28);color:#16a34a;">
+                                    Produção</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700;font-size:1.05rem;color:#0d1f3c;margin-bottom:8px;">Go-Live — Versão
+                            Estável</div>
+                        <div style="font-size:0.85rem;color:#2d4a72;line-height:1.65;margin-bottom:12px;">
+                            A versão em utilização pelo cliente hoje já está pronta para ser promovida para produção,
+                            visto que possui todos os roteiros em utilização já migrados e todas as funcionalidades
+                            testadas e em pleno funcionamento.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 5 — Tutoriais de Uso
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-5" data-slide="5">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:360px;height:360px;top:-70px;right:-60px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:240px;height:240px;bottom:-50px;left:-30px;background:#1a4f99;opacity:0.05;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Treinamento & Capacitação</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:400;margin-bottom:0.3rem;">
+                    Tutoriais de Uso do Sistema</h2>
+                <div class="accent-line reveal"></div>
+                <p class="reveal" style="font-size:0.88rem;color:#2d4a72;margin-bottom:1.4rem;">Entregues em <strong
+                        style="color:#1e5bb5;">duas fases</strong>, cobrindo o App Mobile e o Painel de Controle.</p>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <!-- Fase 1 -->
+                    <div class="glass glass-hover reveal" style="padding:22px 24px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                            <div style="font-size:1.8rem;">📱</div>
+                            <div>
+                                <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;">Fase 1 — App Mobile</div>
+                                <div class="icon-pill" style="margin-top:4px;">7 de maio</div>
+                            </div>
+                        </div>
+                        <div style="font-size:0.84rem;color:#2d4a72;line-height:1.65;margin-bottom:12px;">
+                            Vídeo tutorial completo de uso do <strong style="color:#0d1f3c;">Aplicativo Mobile</strong>,
+                            cobrindo checkin/checkout, visualização de roteiros e atualização de status de visitas.
+                        </div>
+                        <div
+                            style="padding:10px 14px;border-radius:8px;background:rgba(59,127,212,0.10);font-size:0.8rem;color:#5878a0;">
+                            🎬 <strong style="color:#2d4a72;">1 vídeo</strong> entregue em 7 de maio
+                        </div>
+                    </div>
+
+                    <!-- Fase 2 -->
+                    <div class="glass glass-hover reveal" style="padding:22px 24px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                            <div style="font-size:1.8rem;">🖥️</div>
+                            <div>
+                                <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;">Fase 2 — Painel de
+                                    Controle</div>
+                                <div class="icon-pill" style="margin-top:4px;">17 de maio</div>
+                            </div>
+                        </div>
+                        <div style="font-size:0.84rem;color:#2d4a72;line-height:1.65;margin-bottom:12px;">
+                            Série de <strong style="color:#1e5bb5;">7 vídeos tutoriais</strong> cobrindo as principais
+                            funcionalidades do Painel de Controle: gestão de lojas, criação de roteiros, ciclos de
+                            visitação e relatórios.
+                        </div>
+                        <div
+                            style="padding:10px 14px;border-radius:8px;background:rgba(59,127,212,0.10);font-size:0.8rem;color:#5878a0;">
+                            🎬 <strong style="color:#2d4a72;">7 vídeos</strong> entregues em 17 de maio
+                        </div>
+                    </div>
+
+                    <!-- Totalizador -->
+                    <div class="glass reveal"
+                        style="padding:18px 24px;grid-column:span 2;display:flex;align-items:center;gap:32px;justify-content:center;visibility:hidden;">
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:#1e5bb5;" data-count="8">8</div>
+                            <div style="font-size:0.74rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.1em;">
+                                Vídeos Totais</div>
+                        </div>
+                        <div style="width:1px;height:40px;background:rgba(255,255,255,0.92);"></div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:#1e5bb5;" data-count="2">2</div>
+                            <div style="font-size:0.74rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.1em;">
+                                Fases</div>
+                        </div>
+                        <div style="width:1px;height:40px;background:rgba(255,255,255,0.92);"></div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:#16a34a;">✓</div>
+                            <div style="font-size:0.74rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.1em;">
+                                100% entregues</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 6 — Melhorias de Usabilidade
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-6" data-slide="6">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:360px;height:360px;top:-70px;right:-60px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:240px;height:240px;bottom:-50px;left:-30px;background:#1a4f99;opacity:0.05;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Produto & Experiência</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:400;margin-bottom:0.3rem;">
+                    5 Melhorias de Usabilidade</h2>
+                <div class="accent-line reveal"></div>
+
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:1rem;">
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;">
+                        <div style="font-size:1.5rem;flex-shrink:0;">🔍</div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;margin-bottom:3px;">Busca Manual
+                                de Lojas pelo Endereço</div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">Possibilidade de buscar lojas manualmente
+                                informando o endereço, aumentando a flexibilidade na criação de roteiros.</div>
+                        </div>
+                    </div>
+
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;">
+                        <div style="font-size:1.5rem;flex-shrink:0;">⚙️</div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;margin-bottom:3px;">Busca de
+                                Lojas em Segundo Plano</div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">A busca por lojas no roteirizador passou a
+                                ocorrer em segundo plano, sem travar a interface durante o processo.</div>
+                        </div>
+                    </div>
+
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;">
+                        <div style="font-size:1.5rem;flex-shrink:0;">🔄</div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;margin-bottom:3px;">Reordenação
+                                de Roteiros em Ciclos Próximos</div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">Possibilidade de alterar a ordem de roteiros
+                                dentro de um ciclo de visitação próximo ao período atual.</div>
+                        </div>
+                    </div>
+
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;">
+                        <div style="font-size:1.5rem;flex-shrink:0;">🗺️</div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;margin-bottom:3px;">Melhorias
+                                Gerais no Roteirizador</div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">Aprimoramentos de interface e fluxo no módulo
+                                de roteirização, incluindo melhor feedback visual e performance.</div>
+                        </div>
+                    </div>
+
+                    <div class="glass glass-hover reveal"
+                        style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;">
+                        <div style="font-size:1.5rem;flex-shrink:0;">📋</div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.95rem;color:#0d1f3c;margin-bottom:3px;">Melhorias na
+                                Gestão de Ciclos de Visitação</div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">Refinamentos na interface de gestão de ciclos,
+                                facilitando a visualização e edição dos períodos de visitação.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 7 — Solicitações no Período
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-7" data-slide="7">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:360px;height:360px;top:-70px;right:-60px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:240px;height:240px;bottom:-50px;left:-30px;background:#1a4f99;opacity:0.05;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Suporte & Atendimento</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:400;margin-bottom:0.3rem;">
+                    39 Solicitações no Período</h2>
+                <div class="accent-line reveal"></div>
+                <p class="reveal" style="font-size:0.84rem;color:#2d4a72;margin-bottom:1.2rem;">Todas as solicitações
+                    abertas entre <strong style="color:#1e5bb5;">4 de maio</strong> e <strong style="color:#1e5bb5;">12
+                        de junho de 2026</strong>.</p>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+                    <!-- Tipo 1 -->
+                    <div class="glass glass-hover reveal" style="padding:20px 22px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="font-size:1.5rem;">❓</div>
+                            <div style="font-weight:700;font-size:0.92rem;color:#0d1f3c;">Dúvidas de Uso</div>
+                        </div>
+                        <div style="font-size:0.8rem;color:#2d4a72;line-height:1.6;">
+                            Questionamentos sobre funcionalidades, fluxos de trabalho e configurações do sistema,
+                            respondidos pela equipe Tantto.
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:4px;">
+                                <span>Volume</span><span style="color:#1e5bb5;">Alto</span>
+                            </div>
+                            <div
+                                style="height:6px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                <div class="bar-fill"
+                                    style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                    data-width="40"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo 2 -->
+                    <div class="glass glass-hover reveal" style="padding:20px 22px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="font-size:1.5rem;">🧑</div>
+                            <div style="font-weight:700;font-size:0.92rem;color:#0d1f3c;">Inclusão & Migração</div>
+                        </div>
+                        <div style="font-size:0.8rem;color:#2d4a72;line-height:1.6;">
+                            Solicitações de inclusão de e-mails de consultores, migração de roteiros e/ou informações de
+                            clientes no sistema.
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:4px;">
+                                <span>Volume</span><span style="color:#1e5bb5;">Médio</span>
+                            </div>
+                            <div
+                                style="height:6px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                <div class="bar-fill"
+                                    style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                    data-width="30"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo 3 -->
+                    <div class="glass glass-hover reveal" style="padding:20px 22px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="font-size:1.5rem;">🐛</div>
+                            <div style="font-weight:700;font-size:0.92rem;color:#0d1f3c;">Reports de Bugs</div>
+                        </div>
+                        <div style="font-size:0.8rem;color:#2d4a72;line-height:1.6;">
+                            Reporte de comportamentos inesperados e falhas no sistema, todos tratados e resolvidos
+                            dentro do período de Hypercare.
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:4px;">
+                                <span>Volume</span><span style="color:#1e5bb5;">Médio</span>
+                            </div>
+                            <div
+                                style="height:6px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                <div class="bar-fill"
+                                    style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                    data-width="25"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo 4 -->
+                    <div class="glass glass-hover reveal" style="padding:20px 22px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="font-size:1.5rem;">✨</div>
+                            <div style="font-weight:700;font-size:0.92rem;color:#0d1f3c;">Melhorias no Sistema</div>
+                        </div>
+                        <div style="font-size:0.8rem;color:#2d4a72;line-height:1.6;">
+                            Solicitações de novas funcionalidades, ajustes de comportamento e melhorias de usabilidade
+                            identificadas durante o uso.
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:4px;">
+                                <span>Volume</span><span style="color:#1e5bb5;">Baixo</span>
+                            </div>
+                            <div
+                                style="height:6px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                <div class="bar-fill"
+                                    style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                    data-width="5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="glass reveal"
+                        style="padding:16px 22px;grid-column:span 2;display:flex;align-items:center;justify-content:center;gap:32px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:2.4rem;font-weight:800;color:#1e5bb5;line-height:1;" data-count="39">
+                                39</div>
+                            <div
+                                style="font-size:0.72rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;">
+                                Total de Solicitações</div>
+                        </div>
+                        <div style="width:1px;height:40px;background:rgba(255,255,255,0.92);"></div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2.4rem;font-weight:800;color:#16a34a;line-height:1;">100%</div>
+                            <div
+                                style="font-size:0.72rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;">
+                                Tratadas</div>
+                        </div>
+                        <div style="width:1px;height:40px;background:rgba(255,255,255,0.92);"></div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2.4rem;font-weight:800;color:#1e5bb5;line-height:1;">40 dias</div>
+                            <div
+                                style="font-size:0.72rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;">
+                                de Cobertura</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 8 — Timeline do Hypercare
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-8" data-slide="8">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:360px;height:360px;top:-70px;right:-60px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:240px;height:240px;bottom:-50px;left:-30px;background:#1a4f99;opacity:0.05;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Linha do Tempo</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:400;margin-bottom:0.3rem;">
+                    Cronologia do Hypercare</h2>
+                <div class="accent-line reveal"></div>
+
+                <div
+                    style="position:relative;padding-left:38px;margin-top:1.2rem;display:flex;flex-direction:column;gap:0;">
+                    <div class="timeline-line"></div>
+
+                    <!-- Item 1 -->
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;background:#3b7fd4;box-shadow:0 0 0 3px rgba(59,127,212,0.25);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#1e5bb5;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">4
+                                MAI</span>
+                            <span style="font-size:0.88rem;color:#0d1f3c;font-weight:600;">Início do Período de
+                                Hypercare</span>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;background:#3b7fd4;box-shadow:0 0 0 3px rgba(59,127,212,0.25);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#1e5bb5;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">5
+                                MAI</span>
+                            <span style="font-size:0.88rem;color:#0d1f3c;font-weight:600;">Ambiente HML liberado</span>
+                            <span style="font-size:0.78rem;color:#5878a0;">· Go-Live da Versão Estável</span>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;background:#3b7fd4;box-shadow:0 0 0 3px rgba(59,127,212,0.25);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#1e5bb5;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">7
+                                MAI</span>
+                            <span style="font-size:0.88rem;color:#0d1f3c;font-weight:600;">Tutorial App Mobile
+                                entregue</span>
+                            <span style="font-size:0.78rem;color:#5878a0;">· 1 vídeo</span>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;background:#3b7fd4;box-shadow:0 0 0 3px rgba(59,127,212,0.25);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#1e5bb5;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">17
+                                MAI</span>
+                            <span style="font-size:0.88rem;color:#0d1f3c;font-weight:600;">Tutoriais Painel de Controle
+                                entregues</span>
+                            <span style="font-size:0.78rem;color:#5878a0;">· 7 vídeos</span>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;background:#3b7fd4;box-shadow:0 0 0 3px rgba(59,127,212,0.25);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#1e5bb5;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">MAI–JUN</span>
+                            <span style="font-size:0.88rem;color:#0d1f3c;font-weight:600;">Resluções de Dúvidas, Bugs e
+                                Ajustes no Sistema</span>
+                            <span style="font-size:0.78rem;color:#5878a0;">· 39 solicitações atendidas</span>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;background:#3b7fd4;box-shadow:0 0 0 3px rgba(59,127,212,0.25);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#1e5bb5;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">9
+                                JUN</span>
+                            <span style="font-size:0.88rem;color:#0d1f3c;font-weight:600;">Migração de roteiros
+                                concluída</span>
+                            <span style="font-size:0.78rem;color:#5878a0;">· 166 roteiros migrados</span>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="position:relative;padding:10px 0 10px 20px;">
+                        <div
+                            style="position:absolute;left:-26px;top:14px;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#4ade80,#22c55e);box-shadow:0 0 0 4px rgba(74,222,128,0.28);">
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+                            <span
+                                style="font-size:0.72rem;color:#16a34a;font-weight:700;letter-spacing:0.06em;white-space:nowrap;">12
+                                JUN</span>
+                            <span style="font-size:0.88rem;color:#16a34a;font-weight:700;">Encerramento do
+                                Hypercare</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 9 — Estatísticas do Projeto
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-9" data-slide="9">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:420px;height:420px;top:-90px;right:-90px;background:#3b7fd4;opacity:0.13;"></div>
+                <div class="blob"
+                    style="width:280px;height:280px;bottom:-60px;left:-50px;background:#70b0f0;opacity:0.06;"></div>
+            </div>
+            <div class="content">
+                <div class="section-label reveal">Seção 2 · Dados & Números</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:400;margin-bottom:0.3rem;">
+                    Estatísticas do Projeto</h2>
+                <div class="accent-line reveal"></div>
+
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:1.2rem;">
+                    <div class="glass glass-hover reveal" style="padding:20px 16px;text-align:center;">
+                        <div style="font-size:2.2rem;font-weight:800;color:#1e5bb5;line-height:1;" data-count="166">166
+                        </div>
+                        <div
+                            style="font-size:0.7rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px;">
+                            Roteiros<br>Migrados</div>
+                    </div>
+                    <div class="glass glass-hover reveal" style="padding:20px 16px;text-align:center;">
+                        <div style="font-size:2.2rem;font-weight:800;color:#1e5bb5;line-height:1;" data-count="39">39
+                        </div>
+                        <div
+                            style="font-size:0.7rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px;">
+                            Solicitações<br>Atendidas</div>
+                    </div>
+                    <div class="glass glass-hover reveal" style="padding:20px 16px;text-align:center;">
+                        <div style="font-size:2.2rem;font-weight:800;color:#1e5bb5;line-height:1;" data-count="8">8
+                        </div>
+                        <div
+                            style="font-size:0.7rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px;">
+                            Tutoriais<br>Entregues</div>
+                    </div>
+                    <div class="glass glass-hover reveal" style="padding:20px 16px;text-align:center;">
+                        <div style="font-size:2.2rem;font-weight:800;color:#1e5bb5;line-height:1;" data-count="5">5
+                        </div>
+                        <div
+                            style="font-size:0.7rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px;">
+                            Melhorias<br>de UX</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+                    <div class="glass reveal" style="padding:18px 22px;">
+                        <div style="font-size:0.8rem;color:#2d4a72;font-weight:600;margin-bottom:12px;">Tipos de
+                            Solicitações</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div>
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:3px;">
+                                    <span>👤 Inclusão & Migração</span><span style="color:#1e5bb5;">Alta</span>
+                                </div>
+                                <div
+                                    style="height:5px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                    <div class="bar-fill"
+                                        style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                        data-width="82"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:3px;">
+                                    <span>✨ Melhorias</span><span style="color:#1e5bb5;">Média-Alta</span>
+                                </div>
+                                <div
+                                    style="height:5px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                    <div class="bar-fill"
+                                        style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                        data-width="65"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:3px;">
+                                    <span>❓ Dúvidas de Uso</span><span style="color:#1e5bb5;">Média</span>
+                                </div>
+                                <div
+                                    style="height:5px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                    <div class="bar-fill"
+                                        style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                        data-width="48"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5878a0;margin-bottom:3px;">
+                                    <span>🐛 Bugs Reportados</span><span style="color:#1e5bb5;">Baixa</span>
+                                </div>
+                                <div
+                                    style="height:5px;border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;">
+                                    <div class="bar-fill"
+                                        style="height:100%;border-radius:3px;background:linear-gradient(to right,#3b7fd4,#70b0f0);"
+                                        data-width="35"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass reveal" style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;">
+                        <div style="font-size:0.8rem;color:#2d4a72;font-weight:600;margin-bottom:4px;">Entregas do
+                            Período</div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">Go-Live + Ambiente HML</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">166 roteiros migrados</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">8 tutoriais em vídeo</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">5 melhorias de usabilidade</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">Planilha de feriados importada</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                            <div style="font-size:0.8rem;color:#2d4a72;">39 solicitações tratadas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide slide-10" data-slide="10">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:480px;height:480px;top:-100px;right:-80px;background:#3b7fd4;opacity:0.14;"></div>
+                <div class="blob"
+                    style="width:280px;height:280px;bottom:-70px;left:-50px;background:#1a4f99;opacity:0.12;"></div>
+                <div class="blob" style="width:200px;height:200px;top:45%;left:10%;background:#70b0f0;opacity:0.08;">
+                </div>
+            </div>
+            <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1;"></canvas>
+            <div class="content">
+                <div class="reveal"
+                    style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:#3b7fd4;font-weight:600;margin-bottom:0.5rem;">
+                    Próximos Passos</div>
+                <div class="accent-line reveal"></div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(2rem,4vw,3rem);font-weight:400;margin-bottom:0.5rem;line-height:1.2;">
+                    O que precisa ser definido?
+                </h2>
+                <p class="reveal"
+                    style="font-size:0.95rem;color:#2d4a72;margin-bottom:1.6rem;max-width:600px;line-height:1.6;">
+                    Vamos conversar abertamente sobre continuidade, melhorias e oportunidades para o próximo ciclo.
+                </p>
+                <div class="reveal"
+                    style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:1.4rem;">
+                    <div class="glass glass-hover" style="padding:1.2rem;">
+                        <div style="font-size:1.8rem;margin-bottom:0.6rem;">🔧</div>
+                        <div style="font-size:0.82rem;font-weight:700;color:#1e5bb5;margin-bottom:0.4rem;">Sustentação &
+                            Manutenção</div>
+                        <p style="font-size:0.75rem;color:#2d4a72;line-height:1.5;margin:0;">Suporte contínuo ao sistema
+                            após o encerramento do Hypercare</p>
+                    </div>
+                    <div class="glass glass-hover" style="padding:1.2rem;">
+                        <div style="font-size:1.8rem;margin-bottom:0.6rem;">🚀</div>
+                        <div style="font-size:0.82rem;font-weight:700;color:#1e5bb5;margin-bottom:0.4rem;">Melhorias &
+                            Novas
+                            Funcionalidades</div>
+                        <p style="font-size:0.75rem;color:#2d4a72;line-height:1.5;margin:0;">Funcionalidades solicitadas
+                            e evoluções que vocês gostariam de implementar no futuro</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+         SLIDE 10 — Encerramento / Thank You
+    ════════════════════════════════════════════ -->
+        <div class="slide slide-11" data-slide="11">
+            <div class="gradient-mesh">
+                <div class="blob"
+                    style="width:540px;height:540px;top:-120px;right:-100px;background:#3b7fd4;opacity:0.06;"></div>
+                <div class="blob"
+                    style="width:320px;height:320px;bottom:-80px;left:-60px;background:#1a4f99;opacity:0.07;"></div>
+                <div class="blob" style="width:220px;height:220px;top:40%;left:12%;background:#70b0f0;opacity:0.06;">
+                </div>
+            </div>
+            <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+            <div class="content" style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+                <div class="reveal" style="font-size:5rem;animation:float 3s ease-in-out infinite;margin-bottom:1rem;">
+                    🤝</div>
+                <div class="reveal"
+                    style="font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;color:#1e5bb5;font-weight:600;margin-bottom:0.8rem;">
+                    Projeto Maresias · Hypercare Encerrado</div>
+                <h2 class="reveal"
+                    style="font-family:'Instrument Serif',serif;font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:400;line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,#1e5bb5,#0a3a82,#3b7fd4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                    Obrigado pela<br>parceria!
+                </h2>
+                <p class="reveal"
+                    style="font-size:clamp(0.88rem,1.5vw,1.05rem);color:#2d4a72;max-width:520px;line-height:1.7;margin-bottom:2rem;">
+                    O período de Hypercare foi finalizado. O sistema de roteirização Maresias está estável,
+                    com a equipe capacitada e todos os roteiros migrados.
+                </p>
+                <div class="reveal"
+                    style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:560px;margin-bottom:2rem;">
+                    <div class="glass" style="padding:14px;text-align:center;">
+                        <div style="font-size:1.6rem;font-weight:800;color:#16a34a;" data-count="40">40</div>
+                        <div
+                            style="font-size:0.68rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">
+                            Dias de<br>Suporte</div>
+                    </div>
+                    <div class="glass" style="padding:14px;text-align:center;">
+                        <div style="font-size:1.6rem;font-weight:800;color:#1e5bb5;" data-count="166">166</div>
+                        <div
+                            style="font-size:0.68rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">
+                            Roteiros<br>Ativos</div>
+                    </div>
+                    <div class="glass" style="padding:14px;text-align:center;">
+                        <div style="font-size:1.6rem;font-weight:800;color:#1e5bb5;" data-count="39">39</div>
+                        <div
+                            style="font-size:0.68rem;color:#5878a0;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">
+                            Tickets<br>Resolvidos</div>
+                    </div>
+                </div>
+                <!-- Logos -->
+                <div class="reveal" style="display:flex;align-items:center;gap:28px;opacity:0.75;">
+                    <img src="https://nbiefpnxplioxembpfrl.supabase.co/storage/v1/object/public/tantto/maresias_logo.png" style="max-height:30px;" />
+                    <div style="width:1px;height:28px;background:rgba(255,255,255,0.2);"></div>
+                    <img src="https://nbiefpnxplioxembpfrl.supabase.co/storage/v1/object/public/tantto/tantto_logo.png" style="max-height:30px;" />
+                </div>
+            </div>
+        </div>
+
+    </div><!-- .deck -->
+
+    <!-- NAVIGATION -->
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="changeSlide(-1)" aria-label="Slide anterior">&#8249;</button>
+        <div class="slide-dots" id="dots"></div>
+        <button class="nav-btn" onclick="changeSlide(1)" aria-label="Próximo slide">&#8250;</button>
+        <span class="slide-counter" id="counter">1 / 10</span>
+    </div>
+
+    <script>
+        /* === Deck Navigation === */
+        let current = 1;
+        const total = document.querySelectorAll('.slide').length;
+        const dotsContainer = document.getElementById('dots');
+        const counter = document.getElementById('counter');
+        for (let i = 1; i <= total; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 1 ? ' active' : '');
+            dot.onclick = () => goToSlide(i);
+            dotsContainer.appendChild(dot);
+        }
+        function goToSlide(n) {
+            const prev = document.querySelector('.slide.active');
+            const next = document.querySelector(`.slide[data-slide="${n}"]`);
+            if (prev) prev.classList.remove('active');
+            if (next) { next.classList.add('active'); animateSlide(next); }
+            current = n; updateNav();
+        }
+        function changeSlide(dir) { let n = current + dir; if (n < 1) n = total; if (n > total) n = 1; goToSlide(n); }
+        function updateNav() {
+            document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
+            counter.textContent = current + ' / ' + total;
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+        });
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+        document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+
+        /* === Animate reveal elements === */
+        function animateSlide(slide) {
+            slide.querySelectorAll('.reveal').forEach((el, i) => {
+                el.style.transition = 'none';
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(18px)';
+                el.offsetHeight;
+                const delay = i * 0.07;
+                el.style.transition = `opacity 0.4s ease ${delay}s, transform 0.4s ease ${delay}s`;
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            });
+            animateSlideEffects(slide);
+        }
+
+        function animateSlideEffects(slide) {
+            /* Counters */
+            slide.querySelectorAll('[data-count]:not(.counted)').forEach(el => {
+                el.classList.add('counted');
+                const target = parseInt(el.dataset.count);
+                let cur = 0; const step = Math.max(1, target / 40);
+                const timer = setInterval(() => {
+                    cur += step; if (cur >= target) { cur = target; clearInterval(timer); }
+                    el.textContent = Math.round(cur).toLocaleString('pt-BR');
+                }, 30);
+            });
+            /* Bar fills */
+            slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => {
+                bar.classList.add('fill-init');
+                bar.style.width = '0%';
+                bar.style.transition = `width 0.7s ease ${i * 0.1}s`;
+                bar.offsetHeight;
+                bar.style.width = bar.dataset.width + '%';
+            });
+        }
+
+        /* === Mouse spotlight === */
+        document.addEventListener('mousemove', (e) => {
+            const s = document.querySelector('.mouse-spotlight');
+            if (s) s.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(59,127,212,0.06), transparent 40%)`;
+        });
+
+        /* === Particle Canvas === */
+        window.initParticles = function (canvas, options) {
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth || window.innerWidth;
+            canvas.height = canvas.offsetHeight || window.innerHeight;
+            const interactive = options.interactive !== false;
+            const count = options.count || (interactive ? 50 : 18);
+            let mx = -1000, my = -1000;
+            const particles = Array.from({ length: count }, () => ({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+                size: Math.random() * 2.2 + 0.6, alpha: Math.random() * 0.3 + 0.08
+            }));
+            if (interactive) {
+                canvas.addEventListener('mousemove', (e) => { const r = canvas.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; });
+                canvas.addEventListener('mouseleave', () => { mx = -1000; my = -1000; });
+            }
+            (function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    if (interactive) { const dx = p.x - mx, dy = p.y - my, d = Math.sqrt(dx * dx + dy * dy); if (d < 110) { const f = (110 - d) / 110 * 2; p.vx += (dx / d) * f * 0.1; p.vy += (dy / d) * f * 0.1; } }
+                    p.vx *= 0.98; p.vy *= 0.98; p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(59,127,212,${p.alpha})`; ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            })();
+        };
+        document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, { interactive: true, count: 50 }));
+        document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, { interactive: false, count: 18 }));
+
+        /* Animate first slide on load */
+        try { animateSlide(document.querySelector('.slide.active')); } catch (e) { console.warn(e); }
+    </script>
+
+</body>
+
+</html>
